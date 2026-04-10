@@ -79,11 +79,11 @@ import os
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'mytodo',
-        'USER': 'postgres',
-        'PASSWORD': 'tony',
-        'HOST': '127.0.0.1',
-        'PORT': 5432,
+        'NAME': os.getenv('DB'),
+        'USER': os.getenv('USER'),
+        'PASSWORD': os.getenv('PASSWORD'),
+        'HOST': os.getenv('HOST'),
+        'PORT': os.getenv('PORT'),
     }
 }
 
