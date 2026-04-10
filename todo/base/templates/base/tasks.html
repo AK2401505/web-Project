@@ -1,0 +1,137 @@
+{% extends 'base/main.html' %}
+
+{% block title %}Task List{% endblock %}
+
+{% block content %}
+{% if request.user.is_authenticated %}
+<div class="user-info">
+    <p>Welcome, {{ request.user.first_name|default:request.user.username }}! 👋</p>
+    <form method="post" action="{% url 'logout' %}" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit">Logout</button>
+    </form>
+</div>
+{% else %}
+<div class="auth-links">
+    <a href="{% url 'login' %}">Login</a>
+    <a href="{% url 'register' %}">Register</a>
+</div>
+{% endif %}
+
+<h1>📋 My Task List</h1>
+
+<div style="text-align: center; margin-bottom: 20px;">
+    <a href="{% url 'task-create' %}" class="add-task-btn">➕ Add New Task</a>
+</div>
+
+<!-- Search and Filter Form -->
+<form method="get" class="search-form">
+    <input type="text" name="search" placeholder="🔍 Search tasks..." value="{{ search_input }}">
+    <select name="filter">
+        <option value="all" {% if filter_by == 'all' %}selected{% endif %}>All Tasks</option>
+        <option value="active" {% if filter_by == 'active' %}selected{% endif %}>Active</option>
+        <option value="completed" {% if filter_by == 'completed' %}selected{% endif %}>Completed</option>
+        <option value="High" {% if filter_by == 'High' %}selected{% endif %}>High Priority</option>
+        <option value="Medium" {% if filter_by == 'Medium' %}selected{% endif %}>Medium Priority</option>
+        <option value="Low" {% if filter_by == 'Low' %}selected{% endif %}>Low Priority</option>
+    </select>
+    <button type="submit">Apply</button>
+</form>
+
+<!-- Progress Bar -->
+<div class="stat-container">
+    <div class="details">
+        <h3>Keep it up!</h3>
+        <div class="progress-bar">
+            <div class="progress" style="width: {{ progress_percent }}%;"></div>
+        </div>
+    </div>
+    <div class="numbers">
+        <p>{{ completed_count }} / {{ total_count }}</p>
+    </div>
+</div>
+
+<!-- Display Messages for confetti -->
+{% if messages %}
+    {% for message in messages %}
+        <div class="message" style="text-align: center; margin: 20px 0; padding: 15px; background: #2ecc71; border-radius: 10px; color: white; font-weight: bold;">
+            {{ message }}
+        </div>
+    {% endfor %}
+{% endif %}
+
+{% if tasks %}
+<table>
+    <thead>
+        <tr>
+            <th>Task</th>
+            <th>Priority</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for task in tasks %}
+        <tr class="prio-{{ task.priority|lower }}">
+            <td>
+                <strong>{{ task.title }}</strong>
+                {% if task.description %}
+                <br><small style="opacity: 0.7;">{{ task.description|truncatechars:50 }}</small>
+                {% endif %}
+            </td>
+            <td>
+                <span style="
+                    {% if task.priority == 'High' %}color: #ff4d4d; font-weight: bold;
+                    {% elif task.priority == 'Medium' %}color: #ffcc00; font-weight: bold;
+                    {% else %}color: #2ecc71; font-weight: bold;
+                    {% endif %}">
+                    {{ task.priority }}
+                </span>
+            </td>
+            <td class="status-cell">
+                {% if task.completed %}
+                    ✅ Completed
+                {% else %}
+                    ⏳ Pending
+                {% endif %}
+            </td>
+            <td class="task-actions">
+                <a href="{% url 'task' task.id %}">View</a>
+                <a href="{% url 'task-update' task.id %}">Edit</a>
+                
+                <!-- Complete/Toggle Button -->
+                <form method="post" action="{% url 'toggle-complete' task.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="toggle-complete-btn" style="
+                        {% if task.completed %}
+                            background: #ffcc00; color: #333; border: none; padding: 5px 12px; border-radius: 8px; cursor: pointer;
+                        {% else %}
+                            background: #2ecc71; color: white; border: none; padding: 5px 12px; border-radius: 8px; cursor: pointer;
+                        {% endif %}">
+                        {% if task.completed %}
+                            🔄 Mark Pending
+                        {% else %}
+                            ✅ Complete
+                        {% endif %}
+                    </button>
+                </form>
+                
+                <!-- Delete Button -->
+                <form method="post" action="{% url 'task-delete' task.id %}" style="display: inline;" onsubmit="return confirm('Delete this task?')">
+                    {% csrf_token %}
+                    <button type="submit" style="background: #ff4d4d; color: white; border: none; padding: 5px 12px; border-radius: 8px; cursor: pointer;">
+                        🗑️ Delete
+                    </button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+<div class="empty-state">
+    <h3>📭 No tasks found</h3>
+    <p>Click "Add New Task" to create your first task!</p>
+</div>
+{% endif %}
+{% endblock %}

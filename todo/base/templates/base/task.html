@@ -1,0 +1,31 @@
+{% extends 'base/main.html' %}
+
+{% block title %}{{ task }}{% endblock %}
+
+{% block content %}
+<h1>📄 Task Details</h1>
+
+<div class="task-detail">
+    <p><strong>Title:</strong> {{ task.title }}</p>
+    <p><strong>Description:</strong> {{ task.description|default:"No description" }}</p>
+    <p><strong>Priority:</strong> 
+        <span style="
+            {% if task.priority == 'High' %}color: #ff4d4d;
+            {% elif task.priority == 'Medium' %}color: #ffcc00;
+            {% else %}color: #2ecc71;
+            {% endif %}">
+            {{ task.priority }}
+        </span>
+    </p>
+    <p><strong>Due Date:</strong> {{ task.due_date|date:"F j, Y"|default:"No due date" }}</p>
+    <p><strong>Status:</strong> {% if task.completed %}✅ Completed{% else %}⏳ Pending{% endif %}</p>
+    <p><strong>Created:</strong> {{ task.created_at|date:"F j, Y, g:i a" }}</p>
+</div>
+
+<div class="task-actions" style="margin-top: 20px; text-align: center;">
+    <a href="{% url 'task-update' task.id %}">Edit Task</a>
+    <a href="{% url 'task-delete' task.id %}">Delete Task</a>
+    <a href="{% url 'tasks' %}">Back to List</a>
+</div>
+{% endblock %}
+

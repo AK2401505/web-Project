@@ -1,0 +1,15 @@
+{% extends 'base/main.html' %}
+
+{% block title %}{% if task %}Edit Task{% else %}Create Task{% endif %}{% endblock %}
+
+{% block content %}
+<h1>{% if task %}✏️ Edit Task{% else %}➕ Create Task{% endif %}</h1>
+
+<form method="post" class="task-form">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% if task %}Update{% else %}Create{% endif %} Task</button>
+</form>
+
+<a href="{% url 'tasks' %}" class="back-link">← Back to Task List</a>
+{% endblock %}
