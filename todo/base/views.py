@@ -142,3 +142,47 @@ def toggle_theme(request):
         else:
             request.session['theme'] = 'light'
     return redirect(request.META.get('HTTP_REFERER', 'tasks'))
+
+def forgot_password(request):
+    if request.method == 'POST':
+        username = request.POST.get('username')
+        email = request.POST.get('email')
+        
+        try:
+            user = users.objects.get(username=username, email=email)
+            # Store user id in session for security
+            request.session['reset_user_id'] = user.id
+            return redirect('reset_password', user_id=user.id)
+        except users.DoesNotExist:
+            messages.error(request, '❌ No user found with this username and email combination. Please try again.')
+    
+    return render(request, 'base/forgot_password.html')
+
+def reset_password(request, user_id):
+    # Check if user is authorized to reset (from session)
+    if request.session.get('reset_user_id') != user_id:
+        messages.error(request, 'Unauthorized access. Please start over.')
+        return redirect('forgot_password')
+    
+    user = get_object_or_404(users, id=user_id)
+    
+    if request.method == 'POST':
+        password1 = request.POST.get('password1')
+        password2 = request.POST.get('password2')
+        
+        if not password1 or not password2:
+            messages.error(request, 'Please fill in both password fields.')
+        elif password1 != password2:
+            messages.error(request, '❌ Passwords do not match!')
+        elif len(password1) < 8:
+            messages.error(request, 'Password must be at least 8 characters long.')
+        else:
+            # Set the new password
+            user.set_password(password1)
+            user.save()
+            # Clear the session
+            del request.session['reset_user_id']
+            messages.success(request, '✅ Password reset successfully! Please login with your new password.')
+            return redirect('login')
+    
+    return render(request, 'base/reset_password.html', {'username': user.username})
