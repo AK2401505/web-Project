@@ -22,4 +22,7 @@ urlpatterns = [
     # Feature URLs
     path('toggle-theme/', views.toggle_theme, name='toggle_theme'),
     path('toggle-complete/<int:pk>/', views.toggle_complete, name='toggle-complete'),
+
+    path('forgot-password/', views.forgot_password, name='forgot_password'),
+    path('reset-password/<int:user_id>/', views.reset_password, name='reset_password'),
 ]
